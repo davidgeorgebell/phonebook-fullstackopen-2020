@@ -24,6 +24,19 @@ export const createContact = async (contactObject) => {
     }
 }
 
+export const updateContact = async (id, updatedPerson) => {
+    const res = await fetch(`http://localhost:3001/phonebook/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedPerson),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    })
+    console.log(res)
+    const data = await res.json()
+    return data
+}
+
 export const removeContact = async (id) => {
     const res = await fetch(`http://localhost:3001/phonebook/${id}`, {
         method: 'DELETE'
@@ -31,3 +44,4 @@ export const removeContact = async (id) => {
     const data = res.json()
     return data
 }
+

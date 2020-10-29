@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ContactList } from '../components/ContactList'
 import { Filter } from '../components/Filter'
 import { NewContactForm } from '../components/NewContactForm'
-import { createContact, getAllContacts, removeContact } from '../services/phonebook'
+import { createContact, getAllContacts, removeContact, updateContact } from '../services/phonebook'
 
 const Home = () => {
   const [persons, setPersons] = useState([])
@@ -42,18 +42,25 @@ const Home = () => {
   const addContact = e => {
     e.preventDefault()
 
+    const contactObject = {
+      name: newName,
+      number: newNumber,
+      date: new Date().toISOString(),
+    }
+
     const existingContact = persons.find(person => person.name === newName)
 
     if (existingContact) {
-      window.alert(`${newName} is already in phonebook`)
+      window.confirm(`${newName} is already in phonebook. Update number?`)
+        &&
+        updateContact(existingContact.id, contactObject).then(updateContact => {
+          setPersons(persons.map(person => person.id === updateContact.id ? updateContact : person))
+        }
+        )
+      clearInput()
     }
     else {
 
-      const contactObject = {
-        name: newName,
-        number: newNumber,
-        date: new Date().toISOString(),
-      }
       createContact(contactObject).then(data => setPersons(persons => persons.concat(data)))
 
       clearInput()
@@ -61,7 +68,7 @@ const Home = () => {
   }
 
 
-  // const contactsToDisplay = persons.length && persons.filter(person => person.name.includes(filteredName))
+  const filteredContacts = persons.length && persons.filter(person => person.name.includes(filteredName))
 
 
   return (
@@ -71,7 +78,7 @@ const Home = () => {
       <h3 className='bolder text-2xl'>Add a new contact</h3>
       <NewContactForm newName={newName} newNumber={newNumber} handleContactChange={handleContactChange} handleNumberChange={handleNumberChange} addContact={addContact} />
       <h3 className='bolder text-2xl'>Numbers</h3>
-      {persons.length ? <ContactList persons={persons} deleteContact={deleteContact} /> : null}
+      {persons.length ? <ContactList persons={filteredContacts} deleteContact={deleteContact} /> : null}
     </div>
   )
 }
