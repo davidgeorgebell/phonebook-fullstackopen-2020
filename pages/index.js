@@ -1,18 +1,18 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ContactList } from '../components/ContactList'
 import { Filter } from '../components/Filter'
 import { NewContactForm } from '../components/NewContactForm'
+import { createContact, getAllContacts, removeContact } from '../services/phonebook'
 
 const Home = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: 11140040, id: 1 },
-    { name: 'Mario', number: 1235959, id: 2 },
-    { name: 'John Wick', number: 111020202, id: 3 },
-    { name: 'Princess Peach', number: 202020, id: 4 },
-  ])
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filteredName, setFilteredName] = useState('')
+
+  useEffect(() => {
+    getAllContacts().then(response => setPersons(response))
+  }, [])
 
   const handleContactChange = e => {
     e.preventDefault()
@@ -27,6 +27,12 @@ const Home = () => {
     e.preventDefault()
     setFilteredName(e.target.value)
   }
+  const deleteContact = (id, name) => {
+    if (window.confirm(`Delete ${name}?`)) {
+      removeContact(id)
+      setPersons(persons.filter(person => person.id !== id))
+    }
+  }
 
   const clearInput = () => {
     setNewName('')
@@ -36,25 +42,26 @@ const Home = () => {
   const addContact = e => {
     e.preventDefault()
 
-    const existingContact = persons.find(person => person.name.toLowerCase() === newName.toLocaleLowerCase())
+    const existingContact = persons.find(person => person.name === newName)
 
     if (existingContact) {
       window.alert(`${newName} is already in phonebook`)
     }
     else {
+
       const contactObject = {
         name: newName,
         number: newNumber,
         date: new Date().toISOString(),
-        id: persons.length + 1,
       }
-      setPersons(persons.concat(contactObject))
+      createContact(contactObject).then(data => setPersons(persons => persons.concat(data)))
+
       clearInput()
     }
   }
 
 
-  const contactsToDisplay = persons.filter(person => person.name.toLocaleLowerCase().includes(filteredName))
+  // const contactsToDisplay = persons.length && persons.filter(person => person.name.includes(filteredName))
 
 
   return (
@@ -64,7 +71,7 @@ const Home = () => {
       <h3 className='bolder text-2xl'>Add a new contact</h3>
       <NewContactForm newName={newName} newNumber={newNumber} handleContactChange={handleContactChange} handleNumberChange={handleNumberChange} addContact={addContact} />
       <h3 className='bolder text-2xl'>Numbers</h3>
-      <ContactList contactsToDisplay={contactsToDisplay} />
+      {persons.length ? <ContactList persons={persons} deleteContact={deleteContact} /> : null}
     </div>
   )
 }

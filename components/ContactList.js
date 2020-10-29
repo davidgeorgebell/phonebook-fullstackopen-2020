@@ -1,10 +1,11 @@
 import React from 'react'
 import { Contact } from './Contact'
 
-export const ContactList = ({ contactsToDisplay }) => {
+export const ContactList = ({ persons, deleteContact }) => {
     return (
-        <ul>
-            {contactsToDisplay.map(person => <Contact person={person} />)}
-        </ul>
+        persons.length ?
+            <ul>
+                {persons.map(person => <Contact key={person.id} deleteContact={deleteContact} person={person} />)}
+            </ul> : <h1>Loading contacts</h1>
     )
 }
